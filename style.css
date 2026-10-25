@@ -115,3 +115,4 @@ footer { color: var(--muted); font-size: 0.8rem; padding-top: 32px; padding-bott
 .resumo-bu { font-size: 0.85rem; color: var(--ink-2); margin-bottom: 12px; }
 .resumo-bu p { margin: 0 0 6px; }
 .resumo-bu-num { color: var(--ink); font-weight: 600; }
+.nota { color: var(--muted); font-size: 0.85rem; margin: 8px 0 0; }

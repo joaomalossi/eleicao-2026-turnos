@@ -89,7 +89,14 @@ function render() {
       const { resultado, fonte } = escolherFonte(paises2[pais], estado.bu?.paises?.[pais]);
       return { nome: pais, fonte, c: comparar(t1.paises[pais], resultado) };
     });
-  $('tabela-paises').innerHTML = renderTabela(linhasPais, 'País');
+  // Só os países que já têm votos no 2º turno (oficial ou boletim de urna).
+  const comDados = linhasPais.filter((l) => l.c.candidatos['13'].ganhoVotos !== null);
+  const semDados = linhasPais.length - comDados.length;
+  $('tabela-paises').innerHTML = renderTabela(comDados, 'País');
+  $('tabela-paises').parentElement.hidden = comDados.length === 0;
+  $('paises-sem-dados').textContent = semDados === 0 ? ''
+    : comDados.length === 0 ? `Nenhum dos ${linhasPais.length} países tem votos do 2º turno ainda.`
+    : `${semDados} de ${linhasPais.length} países ainda sem votos do 2º turno (ocultos).`;
   $('resumo-bu').innerHTML = estado.bu ? renderResumoBu(estado.bu, linhasPais) : '';
   $('secao-paises').hidden = false;
 }
