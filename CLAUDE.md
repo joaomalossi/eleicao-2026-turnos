@@ -15,13 +15,13 @@ node scripts/boletins-exterior.mjs    # coleta boletins de urna do exterior
 python3 -m http.server 8765           # servir localmente (módulos ES exigem HTTP)
 ```
 
-Não há build, bundler nem dependências. Para publicar, basta fazer push na `main`: o Pages publica sozinho em cerca de 40 s.
+Não há build, bundler nem dependências. Para publicar, basta fazer push na `main`: o Pages publica sozinho em cerca de 40 s. O Pages manda JS e CSS com cache de 10 min, então **suba o `?v=` do `index.html`** (CSS e import map dos módulos) a cada mudança de código, senão o navegador continua com a versão antiga.
 
 ## Arquitetura
 
 - O navegador lê a API pública do TSE direto (ela libera CORS para qualquer origem) e se atualiza a cada 10 min. Quando algum arquivo falha, tenta de novo em 2 min.
 - O 1º turno é final e fica congelado em `data/turno1.json` (Brasil, 27 UFs e 133 países).
-- `data/exterior-bu.json` é gerado pelo workflow `.github/workflows/boletins.yml` (cron a cada 10 min), que faz commits automáticos. Rode `git pull --rebase` antes de dar push.
+- `data/exterior-bu.json` é gerado pelo workflow `.github/workflows/boletins.yml`, que faz commits automáticos. Ele roda em loop (coleta a cada 5 min) e se redispara ao fim de ~5h30, porque o cron do GitHub não é confiável. Para parar, desative o workflow; cancelar a execução não basta se o cron disparar. Rode `git pull --rebase` antes de dar push.
 
 Módulos em `src/`:
 

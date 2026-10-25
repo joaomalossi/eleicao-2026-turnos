@@ -1,5 +1,8 @@
 name: Boletins de urna do exterior
 
+# O cron do GitHub não tem horário garantido (em 25/10 ficou horas sem disparar).
+# Por isso o job fica em loop, coletando a cada 5 min, e perto do limite de 6 h
+# dispara a si mesmo de novo. O cron fica só de reserva.
 on:
   schedule:
     - cron: '*/10 * * * *'
@@ -7,6 +10,7 @@ on:
 
 permissions:
   contents: write
+  actions: write
 
 concurrency:
   group: boletins
@@ -15,22 +19,33 @@ concurrency:
 jobs:
   coletar:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 350
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: 20
-      - run: node scripts/boletins-exterior.mjs
-      - name: Publica os dados se mudaram
+      - name: Coleta em loop
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add data/exterior-bu.json data/boletins-cache.json
-          if git diff --cached --quiet -- data/boletins-cache.json; then
-            echo "Nenhum boletim novo."
-            exit 0
-          fi
-          git commit -m "Atualiza boletins de urna do exterior"
-          git pull --rebase
-          git push
+          fim=$(( $(date +%s) + 330 * 60 ))
+          while [ "$(date +%s)" -lt "$fim" ]; do
+            git pull --rebase --quiet || true
+            node scripts/boletins-exterior.mjs || echo "Falha na coleta; tenta de novo no próximo ciclo."
+            git add data/exterior-bu.json data/boletins-cache.json
+            if git diff --cached --quiet -- data/boletins-cache.json; then
+              echo "Nenhum boletim novo."
+              git reset --quiet
+              git checkout -- data/
+            else
+              git commit --quiet -m "Atualiza boletins de urna do exterior"
+              git pull --rebase --quiet && git push --quiet || echo "Push falhou; tenta no próximo ciclo."
+            fi
+            sleep 300
+          done
+      - name: Dispara a próxima rodada
+        if: ${{ !cancelled() }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh workflow run boletins.yml --ref main

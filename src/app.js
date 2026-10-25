@@ -79,7 +79,13 @@ function render() {
   const linhasUf = Object.keys(UFS)
     .sort((a, b) => t1.ufs[b].eleitorado - t1.ufs[a].eleitorado)
     .map((uf) => ({ nome: UFS[uf], c: comparar(t1.ufs[uf], estado.ufs[uf]) }));
-  $('tabela-ufs').innerHTML = renderTabela(linhasUf, 'UF');
+  // Só os estados que já têm votos no 2º turno.
+  const ufsComDados = linhasUf.filter((l) => l.c.candidatos['13'].ganhoVotos !== null);
+  $('tabela-ufs').innerHTML = renderTabela(ufsComDados, 'UF');
+  $('tabela-ufs').parentElement.hidden = ufsComDados.length === 0;
+  $('ufs-sem-dados').textContent = ufsComDados.length === linhasUf.length ? ''
+    : ufsComDados.length === 0 ? 'Nenhum estado tem votos do 2º turno ainda. A tabela aparece conforme a apuração começar.'
+    : `${linhasUf.length - ufsComDados.length} de ${linhasUf.length} estados ainda sem votos do 2º turno (ocultos).`;
   $('secao-ufs').hidden = false;
 
   const paises2 = agregarPorPais(Object.values(estado.cidades));

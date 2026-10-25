@@ -5,7 +5,23 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Eleição 2026 — 1º × 2º turno</title>
   <meta name="description" content="Apuração do 2º turno presidencial de 2026 comparada ao 1º turno, por UF e por país. Dados do TSE, atualizados a cada 10 minutos.">
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="style.css?v=2">
+  <!-- O Pages guarda JS e CSS em cache por 10 min: suba o ?v= a cada publicação. -->
+  <script type="importmap">
+  {
+    "imports": {
+      "./src/app.js": "./src/app.js?v=2",
+      "./src/boletim.js": "./src/boletim.js?v=2",
+      "./src/comparar.js": "./src/comparar.js?v=2",
+      "./src/formato.js": "./src/formato.js?v=2",
+      "./src/locais.js": "./src/locais.js?v=2",
+      "./src/paises.js": "./src/paises.js?v=2",
+      "./src/tse-api.js": "./src/tse-api.js?v=2",
+      "./src/tse.js": "./src/tse.js?v=2",
+      "./src/view.js": "./src/view.js?v=2"
+    }
+  }
+  </script>
 </head>
 <body>
   <header class="topo">
@@ -26,6 +42,7 @@
     <section id="secao-ufs" hidden>
       <h2>Por estado</h2>
       <div class="tabela-wrap"><table id="tabela-ufs" class="tabela"></table></div>
+      <p id="ufs-sem-dados" class="nota"></p>
     </section>
     <section id="secao-paises" hidden>
       <h2>Exterior, por país</h2>
@@ -43,6 +60,6 @@
     <span class="tag tag-bu">BU</span> = soma não oficial dos boletins de urna publicados pelo TSE.
   </footer>
 
-  <script type="module" src="src/app.js"></script>
+  <script type="module">import './src/app.js';</script>
 </body>
 </html>
