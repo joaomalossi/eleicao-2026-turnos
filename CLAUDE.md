@@ -21,7 +21,8 @@ Não há build, bundler nem dependências. Para publicar, basta fazer push na `m
 
 - O navegador lê a API pública do TSE direto (ela libera CORS para qualquer origem) e se atualiza a cada 10 min. Quando algum arquivo falha, tenta de novo em 2 min.
 - O 1º turno é final e fica congelado em `data/turno1.json` (Brasil, 27 UFs e 133 países).
-- `data/exterior-bu.json` é gerado pelo workflow `.github/workflows/boletins.yml`, que faz commits automáticos. Ele roda em loop (coleta a cada 10 min) e se redispara ao fim de ~5h30, porque o cron do GitHub não é confiável. Para parar, desative o workflow; cancelar a execução não basta se o cron disparar. Rode `git pull --rebase` antes de dar push.
+- `data/exterior-bu.json` é gerado pelo workflow `.github/workflows/boletins.yml`, que faz commits automáticos. Ele roda em loop (coleta a cada 10 min) e se redispara ao fim de ~5h30, porque o cron do GitHub não é confiável. O redisparo usa `gh workflow run` com o `GITHUB_TOKEN` (exige `actions: write`). Para parar, desative o workflow; cancelar a execução não basta se o cron disparar. Rode `git pull --rebase` antes de dar push.
+- O log de um job do Actions só fica disponível quando ele termina. Para depurar o loop, cancele a execução (`gh run cancel`), leia o log e redispare com `gh workflow run boletins.yml --ref main`.
 
 Módulos em `src/`:
 
@@ -29,11 +30,11 @@ Módulos em `src/`:
 |---|---|
 | `tse.js` | `parseResultado`: JSON `-u.json` do TSE → `Resultado` normalizado |
 | `comparar.js` | `comparar(t1, t2)`: ganhos, margens, quem ganhou terreno, flag `parcial`; `escolherFonte(oficial, bu)` |
-| `paises.js` | mapa fixo cidade (código TSE) → país e `agregarPorPais` |
+| `paises.js` | mapa fixo cidade (código TSE) → país, `agregarPorPais` e `somarResultados` (soma vários `Resultado`, por exemplo o total do exterior) |
 | `boletim.js` | `lerBoletim`: decodifica o BU (ASN.1 DER); `resultadosPorCidade` |
 | `tse-api.js` | URLs da API, `buscarJson`, `emLotes` (concorrência limitada) |
 | `formato.js` | números, % e deltas no formato pt-BR |
-| `view.js` / `app.js` | HTML do placar e das tabelas; ciclo de atualização |
+| `view.js` / `app.js` | HTML do placar, das tabelas e do total do exterior; ciclo de atualização |
 
 `Resultado` = `{ local, secoesTotais, secoesTotalizadas, eleitorado, validos, brancos, nulos, candidatos: { [numero]: { nome, votos } }, atualizadoEm }`. Tudo que entra no comparador precisa ter esse formato, seja oficial, soma de cidades ou soma de boletins.
 
@@ -60,7 +61,9 @@ Módulos em `src/`:
 - Cores fixas por candidato (validadas para daltonismo, claro e escuro): Lula `#d03b33`/`#e8615a`, Flávio `#2a6fdb`/`#5b93f0`. Os tokens ficam em `style.css`.
 - Sem votos no 2º turno, os ganhos aparecem como "Aguardando apuração", nunca como valores negativos.
 - O ganho em votos leva a tag "parcial" enquanto a apuração do local estiver abaixo de 100%.
-- A tabela do exterior oculta os países que ainda não têm votos do 2º turno.
+- As tabelas de estados e de países ocultam os locais que ainda não têm votos do 2º turno, com uma nota dizendo quantos estão ocultos.
+- A coluna **Vencedor** mostra quem tem mais votos no 2º turno (antes de 100%, quem está na frente). É diferente de **Ganhou terreno**, que compara a margem do 1º com a do 2º turno.
+- Acima da tabela de países fica o total do exterior: soma do 2º turno de todos os países (oficial ou BU, o mesmo que a tabela usa) contra o 1º turno inteiro do exterior. Leva a tag **BU** se alguma parcela vier de boletim.
 - No celular (390 px), o placar empilha e as tabelas rolam na horizontal dentro do próprio container.
 
 ## Depois da eleição
