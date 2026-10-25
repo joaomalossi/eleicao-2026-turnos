@@ -116,3 +116,9 @@ footer { color: var(--muted); font-size: 0.8rem; padding-top: 32px; padding-bott
 .resumo-bu p { margin: 0 0 6px; }
 .resumo-bu-num { color: var(--ink); font-weight: 600; }
 .nota { color: var(--muted); font-size: 0.85rem; margin: 8px 0 0; }
+.total-ext { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; margin-bottom: 12px; }
+.total-ext p { margin: 0; }
+.total-ext .barra { height: 10px; margin: 10px 0; }
+.total-ext-titulo { font-size: 1.05rem; }
+.total-ext-cands { font-size: 0.9rem; line-height: 1.7; }
+.total-ext-nota { color: var(--muted); font-size: 0.8rem; margin-top: 6px !important; }

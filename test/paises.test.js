@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { paisDaCidade, agregarPorPais } from '../src/paises.js';
+import { paisDaCidade, agregarPorPais, somarResultados } from '../src/paises.js';
 
 const cidades = JSON.parse(readFileSync(new URL('./fixtures/cidades-exterior.json', import.meta.url)));
 
@@ -43,4 +43,14 @@ test('soma as cidades de cada país', () => {
   assert.equal(eua.candidatos['13'].votos, 130);
   assert.equal(eua.candidatos['22'].votos, 120);
   assert.equal(paises['Portugal'].candidatos['13'].votos, 10);
+});
+
+test('soma resultados de países diferentes num total do exterior', () => {
+  const total = somarResultados('Exterior', [cidade('30228', 100, 50, 10, 10), cidade('29955', 10, 5, 3, 1)]);
+  assert.equal(total.local, 'Exterior');
+  assert.equal(total.secoesTotais, 13);
+  assert.equal(total.secoesTotalizadas, 11);
+  assert.equal(total.validos, 165);
+  assert.equal(total.candidatos['13'].votos, 110);
+  assert.equal(total.candidatos['22'].votos, 55);
 });

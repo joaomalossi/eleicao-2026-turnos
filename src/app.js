@@ -1,9 +1,9 @@
 import { parseResultado } from './tse.js';
 import { comparar, escolherFonte } from './comparar.js';
 import { urlResultado, buscarJson, emLotes } from './tse-api.js';
-import { renderPlacar, renderTabela, renderResumoBu } from './view.js';
+import { renderPlacar, renderTabela, renderResumoBu, renderTotalExterior } from './view.js';
 import { UFS } from './locais.js';
-import { CIDADES_EXTERIOR, agregarPorPais } from './paises.js';
+import { CIDADES_EXTERIOR, agregarPorPais, somarResultados } from './paises.js';
 
 const INTERVALO_MS = 10 * 60 * 1000;
 const NOVA_TENTATIVA_MS = 2 * 60 * 1000;
@@ -87,11 +87,18 @@ function render() {
     .sort((a, b) => t1.paises[b].eleitorado - t1.paises[a].eleitorado)
     .map((pais) => {
       const { resultado, fonte } = escolherFonte(paises2[pais], estado.bu?.paises?.[pais]);
-      return { nome: pais, fonte, c: comparar(t1.paises[pais], resultado) };
+      return { nome: pais, fonte, resultado, c: comparar(t1.paises[pais], resultado) };
     });
   // Só os países que já têm votos no 2º turno (oficial ou boletim de urna).
   const comDados = linhasPais.filter((l) => l.c.candidatos['13'].ganhoVotos !== null);
   const semDados = linhasPais.length - comDados.length;
+  // Total do exterior: 2º turno somado de todos os países (oficial ou BU) contra o 1º turno inteiro.
+  const totalT1 = somarResultados('Exterior', Object.values(t1.paises));
+  const totalT2 = somarResultados('Exterior', linhasPais.map((l) => l.resultado).filter(Boolean));
+  $('total-exterior').innerHTML = comDados.length
+    ? renderTotalExterior(comparar(totalT1, totalT2), comDados.length, comDados.some((l) => l.fonte === 'bu'))
+    : '';
+  $('total-exterior').hidden = comDados.length === 0;
   $('tabela-paises').innerHTML = renderTabela(comDados, 'País');
   $('tabela-paises').parentElement.hidden = comDados.length === 0;
   $('paises-sem-dados').textContent = semDados === 0 ? ''

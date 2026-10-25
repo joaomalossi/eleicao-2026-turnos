@@ -144,9 +144,10 @@ export const CIDADES_EXTERIOR = Object.keys(PAIS_DA_CIDADE);
 
 export const paisDaCidade = (codigo) => PAIS_DA_CIDADE[codigo] ?? null;
 
-function somar(pais, resultados) {
+// Soma vários Resultado num só (país, total do exterior).
+export function somarResultados(local, resultados) {
   const total = {
-    local: pais, secoesTotais: 0, secoesTotalizadas: 0, eleitorado: 0,
+    local, secoesTotais: 0, secoesTotalizadas: 0, eleitorado: 0,
     validos: 0, brancos: 0, nulos: 0, candidatos: {}, atualizadoEm: null,
   };
   for (const r of resultados) {
@@ -170,5 +171,5 @@ export function agregarPorPais(resultados) {
     if (!pais) continue;
     (grupos[pais] ??= []).push(r);
   }
-  return Object.fromEntries(Object.entries(grupos).map(([pais, rs]) => [pais, somar(pais, rs)]));
+  return Object.fromEntries(Object.entries(grupos).map(([pais, rs]) => [pais, somarResultados(pais, rs)]));
 }

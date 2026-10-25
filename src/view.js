@@ -52,6 +52,13 @@ function margemCurta(m) {
   return `<span class="dot c${m.lider}"></span> ${deltaPp(m.pp).replace('+', '')}`;
 }
 
+function vencedor(c) {
+  const n = c.margem.t2.lider;
+  if (c.candidatos['13'].ganhoVotos === null) return '—';
+  if (!n) return 'Empate';
+  return `<span class="dot c${n}"></span> ${NOMES[n].split(' ')[0]}`;
+}
+
 function celulasCandidato(c, n) {
   const d = c.candidatos[n];
   const venc = c.margem.t2.lider === n ? ' venc' : '';
@@ -72,6 +79,7 @@ export function renderTabela(linhas, rotuloLocal) {
     <tr>
       <td class="local">${nome}${fonte === 'bu' ? ' <span class="tag tag-bu" title="Soma dos boletins de urna já publicados (não oficial)">BU</span>' : ''}</td>
       <td>${percentual(c.apuracao)}</td>
+      <td class="venc">${vencedor(c)}</td>
       ${celulasCandidato(c, '13')}
       ${celulasCandidato(c, '22')}
       <td class="grupo-ini">${margemCurta(c.margem.t1)}</td>
@@ -80,10 +88,27 @@ export function renderTabela(linhas, rotuloLocal) {
     </tr>`).join('');
   return `
     <thead>
-      <tr><th></th><th></th>${cab('13')}${cab('22')}<th colspan="3" class="grupo-ini">Margem</th></tr>
-      <tr><th>${rotuloLocal}</th><th>Apuração</th>${sub}${sub}<th class="grupo-ini">1º turno</th><th>2º turno</th><th>Ganhou terreno</th></tr>
+      <tr><th></th><th></th><th></th>${cab('13')}${cab('22')}<th colspan="3" class="grupo-ini">Margem</th></tr>
+      <tr><th>${rotuloLocal}</th><th>Apuração</th><th title="Quem tem mais votos no 2º turno (enquanto a apuração não chega a 100%, é quem está na frente)">Vencedor</th>${sub}${sub}<th class="grupo-ini">1º turno</th><th>2º turno</th><th>Ganhou terreno</th></tr>
     </thead>
     <tbody>${corpo}</tbody>`;
+}
+
+// Total dos países já com votos: quem está ganhando no exterior.
+// c = comparar(total do 1º turno, total do 2º turno); temBu = alguma parcela vem de boletim de urna.
+export function renderTotalExterior(c, nPaises, temBu) {
+  const n = c.margem.t2.lider;
+  const pct = (k) => c.candidatos[k].t2.pct;
+  const titulo = n
+    ? `<span class="dot c${n}"></span> ${NOMES[n]} ${c.parcial ? 'está ganhando' : 'venceu'} no exterior com <strong>${percentual(pct(n))}</strong> dos votos válidos`
+    : 'Empate no exterior';
+  const cand = (k) => `<span class="dot c${k}"></span> ${NOMES[k]} ${percentual(pct(k))} · ${numero(c.candidatos[k].t2.votos)} votos <span class="muted">(1º turno: ${percentual(c.candidatos[k].t1.pct)})</span>`;
+  return `
+    <p class="total-ext-titulo">${titulo}${temBu ? ' <span class="tag tag-bu" title="Inclui a soma não oficial dos boletins de urna">BU</span>' : ''}</p>
+    <div class="barra" role="img" aria-label="Lula ${percentual(pct('13'))}, Flávio Bolsonaro ${percentual(pct('22'))}"><span class="c13" style="width:${pct('13')}%"></span><span class="c22" style="width:${pct('22')}%"></span></div>
+    <p class="total-ext-cands">${cand('13')}<br>${cand('22')}</p>
+    <p class="total-ext-nota">Soma de ${nPaises} ${nPaises === 1 ? 'país' : 'países'} com votos do 2º turno · ${percentual(c.apuracao)} das seções do exterior
+    · margem ${descreverMargem(c.margem.t2)}${c.parcial ? ' (parcial)' : ''}</p>`;
 }
 
 // Resumo dos boletins de urna do exterior (não oficial).
