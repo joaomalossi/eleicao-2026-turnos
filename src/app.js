@@ -49,7 +49,9 @@ async function atualizar() {
 function mostrarAviso(falhas, total) {
   const hora = (d) => d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
   let msg = '';
-  if (falhas === total && !estado.paginaEm) {
+  if (falhas === 0 && estado.brasil && estado.brasil.secoesTotalizadas === 0) {
+    msg = 'A apuração do 2º turno ainda não começou. O TSE só divulga resultados depois das 17h (horário de Brasília), quando fecham as urnas. Até lá os campos do 2º turno ficam zerados e a página continua se atualizando sozinha.';
+  } else if (falhas === total && !estado.paginaEm) {
     msg = 'O TSE não respondeu até agora. Por enquanto aparece só o resultado do 1º turno. Uma nova tentativa sai em 2 minutos, ou clique em "Atualizar agora".';
   } else if (falhas === total) {
     msg = `O TSE não respondeu nesta rodada. Os números são da última atualização bem-sucedida (${hora(estado.paginaEm)}). Nova tentativa em 2 minutos.`;
