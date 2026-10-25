@@ -44,3 +44,10 @@ export function comparar(t1, t2, numeros = CANDIDATOS) {
     ganhouTerreno: saldo > 0 ? a : saldo < 0 ? b : null,
   };
 }
+
+// Escolhe entre o resultado oficial do TSE e a soma dos boletins de urna:
+// o boletim vale só enquanto cobrir mais seções que o oficial.
+export function escolherFonte(oficial, bu) {
+  if (bu && bu.secoesTotalizadas > (oficial?.secoesTotalizadas ?? 0)) return { resultado: bu, fonte: 'bu' };
+  return { resultado: oficial, fonte: 'oficial' };
+}

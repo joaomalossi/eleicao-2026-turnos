@@ -61,3 +61,14 @@ test('sem seções apuradas no 2º turno não aponta quem ganhou terreno', () =>
   assert.equal(c.candidatos['13'].ganhoVotos, null);
   assert.equal(c.candidatos['13'].ganhoPp, null);
 });
+
+import { escolherFonte } from '../src/comparar.js';
+
+test('usa o boletim de urna enquanto ele tiver mais seções que o resultado oficial', () => {
+  const oficial = { ...resultado(0, 0, { totais: 10, totalizadas: 0 }) };
+  const bu = { ...resultado(30, 20, { totais: 10, totalizadas: 4 }) };
+  assert.deepEqual(escolherFonte(oficial, bu), { resultado: bu, fonte: 'bu' });
+  const oficialAvancado = { ...resultado(80, 60, { totais: 10, totalizadas: 4 }) };
+  assert.deepEqual(escolherFonte(oficialAvancado, bu), { resultado: oficialAvancado, fonte: 'oficial' });
+  assert.deepEqual(escolherFonte(oficial, undefined), { resultado: oficial, fonte: 'oficial' });
+});

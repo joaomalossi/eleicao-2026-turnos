@@ -1,7 +1,7 @@
 import { parseResultado } from './tse.js';
-import { comparar } from './comparar.js';
+import { comparar, escolherFonte } from './comparar.js';
 import { urlResultado, buscarJson, emLotes } from './tse-api.js';
-import { renderPlacar, renderTabela } from './view.js';
+import { renderPlacar, renderTabela, renderResumoBu } from './view.js';
 import { UFS } from './locais.js';
 import { CIDADES_EXTERIOR, agregarPorPais } from './paises.js';
 
@@ -9,7 +9,7 @@ const INTERVALO_MS = 10 * 60 * 1000;
 const NOVA_TENTATIVA_MS = 2 * 60 * 1000;
 
 const $ = (id) => document.getElementById(id);
-const estado = { turno1: null, brasil: null, ufs: {}, cidades: {}, tseEm: null, paginaEm: null, proxima: null };
+const estado = { turno1: null, brasil: null, ufs: {}, cidades: {}, bu: null, tseEm: null, paginaEm: null, proxima: null };
 
 async function carregarTurno1() {
   const resp = await fetch('data/turno1.json', { cache: 'no-cache' });
@@ -38,6 +38,14 @@ async function atualizar() {
   const cidades = await emLotes(CIDADES_EXTERIOR, 8, lerCidade);
   for (const [cd, r] of cidades.ok) estado.cidades[cd] = r;
 
+  try {
+    // Boletins de urna do exterior, coletados a cada 10 min pelo GitHub Actions.
+    const resp = await fetch(`data/exterior-bu.json?t=${Date.now()}`, { cache: 'no-store' });
+    if (resp.ok) estado.bu = await resp.json();
+  } catch {
+    // Opcional: sem boletins, a tabela usa só o resultado oficial.
+  }
+
   falhas += ufs.falhas.length + cidades.falhas.length;
   const total = 1 + Object.keys(UFS).length + CIDADES_EXTERIOR.length;
   if (falhas < total) estado.paginaEm = new Date();
@@ -50,7 +58,7 @@ function mostrarAviso(falhas, total) {
   const hora = (d) => d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
   let msg = '';
   if (falhas === 0 && estado.brasil && estado.brasil.secoesTotalizadas === 0) {
-    msg = 'A apuração do 2º turno ainda não começou. O TSE só divulga resultados depois das 17h (horário de Brasília), quando fecham as urnas. Até lá os campos do 2º turno ficam zerados e a página continua se atualizando sozinha.';
+    msg = 'A apuração do 2º turno ainda não começou. O TSE só divulga resultados depois das 17h (horário de Brasília), quando fecham as urnas. Até lá os números oficiais do 2º turno ficam zerados. No exterior, onde a votação já terminou em vários países, a tabela de países mostra a soma não oficial dos boletins de urna já publicados.';
   } else if (falhas === total && !estado.paginaEm) {
     msg = 'O TSE não respondeu até agora. Por enquanto aparece só o resultado do 1º turno. Uma nova tentativa sai em 2 minutos, ou clique em "Atualizar agora".';
   } else if (falhas === total) {
@@ -77,8 +85,12 @@ function render() {
   const paises2 = agregarPorPais(Object.values(estado.cidades));
   const linhasPais = Object.keys(t1.paises)
     .sort((a, b) => t1.paises[b].eleitorado - t1.paises[a].eleitorado)
-    .map((pais) => ({ nome: pais, c: comparar(t1.paises[pais], paises2[pais]) }));
+    .map((pais) => {
+      const { resultado, fonte } = escolherFonte(paises2[pais], estado.bu?.paises?.[pais]);
+      return { nome: pais, fonte, c: comparar(t1.paises[pais], resultado) };
+    });
   $('tabela-paises').innerHTML = renderTabela(linhasPais, 'País');
+  $('resumo-bu').innerHTML = estado.bu ? renderResumoBu(estado.bu, linhasPais) : '';
   $('secao-paises').hidden = false;
 }
 

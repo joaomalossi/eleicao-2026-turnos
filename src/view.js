@@ -68,9 +68,9 @@ function celulasCandidato(c, n) {
 export function renderTabela(linhas, rotuloLocal) {
   const cab = (n) => `<th colspan="5" class="grupo-ini"><span class="dot c${n}"></span> ${NOMES[n]}</th>`;
   const sub = '<th class="grupo-ini">2º turno</th><th>Votos</th><th>1º turno</th><th>Ganho p.p.</th><th>Ganho votos</th>';
-  const corpo = linhas.map(({ nome, c }) => `
+  const corpo = linhas.map(({ nome, c, fonte }) => `
     <tr>
-      <td class="local">${nome}</td>
+      <td class="local">${nome}${fonte === 'bu' ? ' <span class="tag tag-bu" title="Soma dos boletins de urna já publicados (não oficial)">BU</span>' : ''}</td>
       <td>${percentual(c.apuracao)}</td>
       ${celulasCandidato(c, '13')}
       ${celulasCandidato(c, '22')}
@@ -84,4 +84,22 @@ export function renderTabela(linhas, rotuloLocal) {
       <tr><th>${rotuloLocal}</th><th>Apuração</th>${sub}${sub}<th class="grupo-ini">1º turno</th><th>2º turno</th><th>Ganhou terreno</th></tr>
     </thead>
     <tbody>${corpo}</tbody>`;
+}
+
+// Resumo dos boletins de urna do exterior (não oficial).
+export function renderResumoBu(bu, linhas) {
+  const comBu = linhas.filter((l) => l.fonte === 'bu');
+  if (!comBu.length) return '';
+  const soma = (n) => comBu.reduce((t, l) => t + l.c.candidatos[n].t2.votos, 0);
+  const hora = new Date(bu.geradoEm).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+  const v13 = soma('13');
+  const v22 = soma('22');
+  const pct = (v) => percentual(v13 + v22 > 0 ? (v / (v13 + v22)) * 100 : 0);
+  return `
+    <p>Antes do resultado oficial (a partir das 17h), os países marcados com <span class="tag tag-bu">BU</span>
+    mostram a soma dos <strong>boletins de urna</strong> que o TSE já publicou, seção por seção.
+    Esses números <strong>não são oficiais</strong>: o "% apurado" é o percentual de seções com boletim publicado.</p>
+    <p class="resumo-bu-num">${numero(bu.secoesRecebidas)} de ${numero(bu.secoesTotais)} seções do exterior com boletim ·
+    <span class="dot c13"></span> Lula ${numero(v13)} (${pct(v13)}) ·
+    <span class="dot c22"></span> Flávio Bolsonaro ${numero(v22)} (${pct(v22)}) · coletado às ${hora}</p>`;
 }

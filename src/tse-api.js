@@ -50,3 +50,18 @@ export async function emLotes(itens, limite, fn) {
   await Promise.all(Array.from({ length: Math.min(limite, itens.length) }, trabalhador));
   return { ok, falhas };
 }
+
+// Arquivos de urna (boletins por seção), publicados à medida que as seções são recebidas.
+export const PLEITO_T2 = '3221';
+const URNA = `${BASE}/arquivo-urna/${PLEITO_T2}`;
+const p4 = (n) => String(n).padStart(4, '0');
+
+export const urlSecoesExterior = () => `${URNA}/config/zz/zz-p00${PLEITO_T2}-cs.json`;
+
+export function urlAuxSecao({ cidade, zona, secao }) {
+  return `${URNA}/dados/zz/${cidade}/${p4(zona)}/${p4(secao)}/p00${PLEITO_T2}-zz-m${cidade}-z${p4(zona)}-s${p4(secao)}-aux.json`;
+}
+
+export function urlArquivoUrna({ cidade, zona, secao }, hash, nome) {
+  return `${URNA}/dados/zz/${cidade}/${p4(zona)}/${p4(secao)}/${hash}/${nome}`;
+}
