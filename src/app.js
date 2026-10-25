@@ -3,11 +3,12 @@ import { comparar } from './comparar.js';
 import { urlResultado, buscarJson, emLotes } from './tse-api.js';
 import { renderPlacar, renderTabela } from './view.js';
 import { UFS } from './locais.js';
+import { CIDADES_EXTERIOR, agregarPorPais } from './paises.js';
 
 const INTERVALO_MS = 10 * 60 * 1000;
 
 const $ = (id) => document.getElementById(id);
-const estado = { turno1: null, brasil: null, ufs: {}, tseEm: null, paginaEm: null, proxima: null };
+const estado = { turno1: null, brasil: null, ufs: {}, cidades: {}, tseEm: null, paginaEm: null, proxima: null };
 
 async function carregarTurno1() {
   const resp = await fetch('data/turno1.json', { cache: 'no-cache' });
@@ -23,6 +24,9 @@ async function atualizar() {
     const lerUf = async (uf) => parseResultado(await buscarJson(urlResultado('t2', uf)));
     const { ok } = await emLotes(Object.keys(UFS), 8, lerUf);
     for (const [uf, r] of ok) estado.ufs[uf] = r;
+    const lerCidade = async (cd) => parseResultado(await buscarJson(urlResultado('t2', `zz${cd}`)));
+    const cidades = await emLotes(CIDADES_EXTERIOR, 8, lerCidade);
+    for (const [cd, r] of cidades.ok) estado.cidades[cd] = r;
     estado.tseEm = brasil.atualizadoEm;
     estado.paginaEm = new Date();
     render();
@@ -43,6 +47,13 @@ function render() {
     .map((uf) => ({ nome: UFS[uf], c: comparar(t1.ufs[uf], estado.ufs[uf]) }));
   $('tabela-ufs').innerHTML = renderTabela(linhasUf, 'UF');
   $('secao-ufs').hidden = false;
+
+  const paises2 = agregarPorPais(Object.values(estado.cidades));
+  const linhasPais = Object.keys(t1.paises)
+    .sort((a, b) => t1.paises[b].eleitorado - t1.paises[a].eleitorado)
+    .map((pais) => ({ nome: pais, c: comparar(t1.paises[pais], paises2[pais]) }));
+  $('tabela-paises').innerHTML = renderTabela(linhasPais, 'País');
+  $('secao-paises').hidden = false;
 }
 
 function mostrarStatus() {

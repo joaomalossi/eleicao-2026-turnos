@@ -67,7 +67,7 @@ button:disabled { opacity: 0.6; cursor: progress; }
 .barra span { display: block; height: 100%; }
 .barra .c13 { background: var(--lula); }
 .barra .c22 { background: var(--flavio); }
-.cands { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.cands { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
 .cand { border-top: 3px solid; padding-top: 10px; }
 .cand.c13 { border-color: var(--lula); }
 .cand.c22 { border-color: var(--flavio); text-align: right; }
@@ -106,5 +106,8 @@ footer { color: var(--muted); font-size: 0.8rem; padding-top: 32px; padding-bott
 @media (max-width: 640px) {
   .cand-pct { font-size: 1.8rem; }
   .margem { grid-template-columns: 1fr; }
+  .cands { grid-template-columns: minmax(0, 1fr); }
+  .cand.c22 { text-align: left; }
+  .cand.c22 .cand-nome { justify-content: flex-start; }
 }
 .muted { color: var(--muted); }
