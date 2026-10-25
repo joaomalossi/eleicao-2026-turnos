@@ -21,7 +21,7 @@ Não há build, bundler nem dependências. Para publicar, basta fazer push na `m
 
 - O navegador lê a API pública do TSE direto (ela libera CORS para qualquer origem) e se atualiza a cada 10 min. Quando algum arquivo falha, tenta de novo em 2 min.
 - O 1º turno é final e fica congelado em `data/turno1.json` (Brasil, 27 UFs e 133 países).
-- `data/exterior-bu.json` é gerado pelo workflow `.github/workflows/boletins.yml`, que faz commits automáticos. Ele roda em loop (coleta a cada 5 min) e se redispara ao fim de ~5h30, porque o cron do GitHub não é confiável. Para parar, desative o workflow; cancelar a execução não basta se o cron disparar. Rode `git pull --rebase` antes de dar push.
+- `data/exterior-bu.json` é gerado pelo workflow `.github/workflows/boletins.yml`, que faz commits automáticos. Ele roda em loop (coleta a cada 10 min) e se redispara ao fim de ~5h30, porque o cron do GitHub não é confiável. Para parar, desative o workflow; cancelar a execução não basta se o cron disparar. Rode `git pull --rebase` antes de dar push.
 
 Módulos em `src/`:
 
@@ -46,6 +46,7 @@ Módulos em `src/`:
 - Escolhas do mapa: Guiana Francesa fica separada da França; Hong Kong entra na China; Rio Branco (`30430`) é no Uruguai.
 - O resultado oficial só é divulgado depois das 17h (Brasília). Antes disso, o exterior usa os **boletins de urna** de `arquivo-urna/3221` (pleito do 2º turno): config `config/zz/zz-p003221-cs.json` → `-aux.json` da seção → `<hash>/<arquivo>-bu.dat`.
 - Na config de seções, as entradas com `nsp` são **agregadas** a uma seção principal e não têm BU próprio. Use só as sem `nsp` (1.351 seções, o mesmo `s.ts` do TSE para `zz`).
+- O TSE responde **429** quando o GitHub Actions faz requisições demais. O coletor usa 4 conexões, para a rodada no primeiro 429 e começa cada rodada num ponto aleatório da lista.
 - O BU vale só enquanto cobrir mais seções que o oficial (`escolherFonte`). Na interface ele é sempre marcado como não oficial (tag **BU**).
 
 ## Testes

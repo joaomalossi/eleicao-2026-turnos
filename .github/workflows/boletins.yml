@@ -1,7 +1,7 @@
 name: Boletins de urna do exterior
 
 # O cron do GitHub não tem horário garantido (em 25/10 ficou horas sem disparar).
-# Por isso o job fica em loop, coletando a cada 5 min, e perto do limite de 6 h
+# Por isso o job fica em loop, coletando a cada 10 min, e perto do limite de 6 h
 # dispara a si mesmo de novo. O cron fica só de reserva.
 on:
   schedule:
@@ -42,7 +42,7 @@ jobs:
               git commit --quiet -m "Atualiza boletins de urna do exterior"
               git pull --rebase --quiet && git push --quiet || echo "Push falhou; tenta no próximo ciclo."
             fi
-            sleep 300
+            sleep 600
           done
       - name: Dispara a próxima rodada
         if: ${{ !cancelled() }}
