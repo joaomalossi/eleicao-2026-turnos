@@ -30,3 +30,23 @@ export async function buscarJson(url, { tentativas = 2 } = {}) {
   }
   throw erro;
 }
+
+// Executa fn sobre cada item com no máximo `limite` chamadas simultâneas.
+// Devolve { ok: Map(item -> valor), falhas: [item] }.
+export async function emLotes(itens, limite, fn) {
+  const ok = new Map();
+  const falhas = [];
+  let i = 0;
+  async function trabalhador() {
+    while (i < itens.length) {
+      const item = itens[i++];
+      try {
+        ok.set(item, await fn(item));
+      } catch {
+        falhas.push(item);
+      }
+    }
+  }
+  await Promise.all(Array.from({ length: Math.min(limite, itens.length) }, trabalhador));
+  return { ok, falhas };
+}
