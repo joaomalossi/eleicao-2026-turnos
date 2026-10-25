@@ -1,0 +1,9 @@
+{
+  "name": "eleicao-2026-turnos",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --test",
+    "snapshot": "node scripts/snapshot-1turno.mjs"
+  }
+}

@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Eleição 2026 — 1º × 2º turno</title>
+  <meta name="description" content="Apuração do 2º turno presidencial de 2026 comparada ao 1º turno, por UF e por país. Dados do TSE, atualizados a cada 10 minutos.">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="topo">
+    <div>
+      <h1>Presidente 2026 · 1º × 2º turno</h1>
+      <p class="sub">Apuração ao vivo do 2º turno (25/10) comparada ao resultado oficial do 1º turno (04/10).</p>
+    </div>
+    <div class="status">
+      <span id="status-texto">Carregando…</span>
+      <button id="atualizar" type="button">Atualizar agora</button>
+    </div>
+  </header>
+
+  <div id="aviso" class="aviso" hidden></div>
+
+  <main>
+    <section id="placar" class="placar" aria-live="polite"></section>
+    <section id="secao-ufs" hidden>
+      <h2>Por estado</h2>
+      <div class="tabela-wrap"><table id="tabela-ufs" class="tabela"></table></div>
+    </section>
+    <section id="secao-paises" hidden>
+      <h2>Exterior, por país</h2>
+      <div class="tabela-wrap"><table id="tabela-paises" class="tabela"></table></div>
+    </section>
+  </main>
+
+  <footer>
+    Fonte: <a href="https://resultados.tse.jus.br" target="_blank" rel="noopener">TSE — Resultados</a>.
+    Percentuais sobre votos válidos. A apuração é o percentual de seções totalizadas.
+    O ganho em votos fica marcado como <span class="tag">parcial</span> até a apuração do local chegar a 100%.
+  </footer>
+
+  <script type="module" src="src/app.js"></script>
+</body>
+</html>
